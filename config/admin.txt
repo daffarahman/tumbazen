@@ -1,0 +1,2 @@
+db_admin_username=admin
+db_admin_password=admin

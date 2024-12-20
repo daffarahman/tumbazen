@@ -1,0 +1,3 @@
+|id|name|description|per_kg|per_km|
+|1|SPX|ShopeeXPress|800|750|
+|2|JMK EXpress|JMK selalu meng jmk paket anda|1000|250|
