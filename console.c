@@ -82,7 +82,7 @@ char *con_inputPwd()
         else if (i < 255 - 1)
         {
             buff[i++] = ch;
-            // printf("");
+            printf("*");
             fflush(stdout);
         }
     }

@@ -73,6 +73,7 @@ void view_settingsConnectBank();
 void view_settingsDisconnectBank();
 
 void view_adminManageProducts();
+void view_adminManageOrders();
 
 int main()
 {
@@ -190,6 +191,7 @@ void view_menu()
                     continue;
                 case 3:
                     // admin manage orders
+
                     continue;
                 case 4:
                     // admin log out
@@ -313,6 +315,8 @@ void view_login()
         case 2:
             // Login as a seller
             con_clearScr();
+
+            (void)printf("Login as administrator\n");
             vis_printBars(V_BAR, con_getSize()->x);
 
             con_printColor("Enter admin username: ", FG_PROMPT);
@@ -418,7 +422,14 @@ void view_logout()
 void view_search()
 {
     int n_input;
+
     char *s_productInput = (char *)malloc(sizeof(char) * 255);
+
+    // for advanced search
+    char *s_categoryInput = (char *)malloc(sizeof(char) * 255);
+    char *s_ascendingInput = (char *)malloc(sizeof(char) * 255);
+    char *s_priceStartInput = (char *)malloc(sizeof(char) * 255);
+    char *s_priceEndInput = (char *)malloc(sizeof(char) * 255);
 
     while (true)
     {
@@ -439,11 +450,12 @@ void view_search()
         switch (n_input)
         {
         case 1:
+            // Simple Search
             con_clearScr();
             (void)printf("Enter keyword for the product you want to search\n");
             vis_printBars(V_BAR, con_getSize()->x);
 
-            con_printColor("Enter keyword: ", FG_PROMPT);
+            con_printColor("Enter keyword (press enter to show all products): ", FG_PROMPT);
             s_productInput = con_inputStr();
 
             vis_printBars(V_BAR, con_getSize()->x);
@@ -512,6 +524,11 @@ void view_search()
             break;
 
         case 2:
+            // Advanced Search
+            con_clearScr();
+            (void)printf("Advanced Search\n");
+            vis_printBars(V_BAR, con_getSize()->x);
+
             break;
         case 3:
             break;
@@ -764,9 +781,84 @@ void view_cartEditItems()
         return;
 
     int n_input;
+    int n_totalPrice;
+
+    char *quantityInput = (char *)malloc(sizeof(char) * 255);
+    int old_quantity, new_quantity;
+
+    db_Row *cart_row = NULL;
+    db_Row *product_row = NULL;
 
     con_printColor("Enter cart ID you want to edit: ", FG_PROMPT);
     n_input = con_inputInt();
+
+    cart_row = db_selectRowWhereId(*t_carts, n_input);
+    if (!cart_row)
+    {
+        con_printColor("Invalid cart ID! (Press Any Key) . . .", FG_ERROR);
+        con_anyKey();
+        return;
+    }
+
+    if (strcmp(cart_row->elements[db_getColIdx(*t_carts, "username")], u_activeUser->username) != 0)
+    {
+        con_printColor("Invalid cart ID! (Press Any Key) . . .", FG_ERROR);
+        con_anyKey();
+        return;
+    }
+
+    con_clearScr();
+
+    printf("Edit your cart item quantity\n");
+    vis_printBars(V_BAR, con_getSize()->x);
+
+    (void)printf("\n%s[Cart Item ID:%d]%s", FG_MAGENTA, cart_row->id, FG_DEFAULT);
+    (void)printf("\n%s", db_selectRowWhereId(*t_products, atoi(cart_row->elements[db_getColIdx(*t_carts, "product_id")]))->elements[db_getColIdx(*t_products, "name")]);
+    (void)printf("\n%sQty:%s%s", FG_GREEN, cart_row->elements[db_getColIdx(*t_carts, "quantity")], FG_DEFAULT);
+    n_totalPrice =
+        atoi(cart_row->elements[db_getColIdx(*t_carts, "quantity")]) *
+        atoi(db_selectRowWhereId(*t_products, atoi(
+                                                  cart_row->elements[db_getColIdx(*t_carts, "product_id")]))
+                 ->elements[db_getColIdx(*t_products, "price")]);
+    (void)printf("\n%sTotal: %sRp%d\n", FG_GREEN, FG_DEFAULT, n_totalPrice);
+
+    vis_printBars(V_BAR, con_getSize()->x);
+    printf("- Make it 0 to delete it"
+           "- Enter to skip / discard edit\n");
+    vis_printBars(V_BAR, con_getSize()->x);
+
+    con_printColor("Set quantity to: ", FG_PROMPT);
+    quantityInput = con_inputStr();
+
+    if (strlen(quantityInput) <= 0)
+    {
+        con_printColor("Cart item did not edited (Press Any Key) . . .", FG_ERROR);
+        con_anyKey();
+        return;
+    }
+
+    new_quantity = atoi(quantityInput);
+
+    if (new_quantity < 0)
+    {
+        con_printColor("Invalid quantity! (Press Any Key) . . .", FG_ERROR);
+        con_anyKey();
+        return;
+    }
+
+    old_quantity = atoi(cart_row->elements[db_getColIdx(*t_carts, "quantity")]);
+
+    product_row = db_selectRowWhereId(*t_products, atoi(cart_row->elements[db_getColIdx(*t_carts, "product_id")]));
+    product_row->elements[db_getColIdx(*t_products, "stock")] =
+        strdup(util_intToStr((atoi(product_row->elements[db_getColIdx(*t_products, "stock")]) + old_quantity) - new_quantity));
+
+    cart_row->elements[db_getColIdx(*t_carts, "quantity")] = util_intToStr(new_quantity);
+
+    db_saveTable(*t_carts, path_carts);
+    db_saveTable(*t_products, path_products);
+
+    con_printColor("Cart successfuly edited! (Press Any Key) . . .", FG_GREEN);
+    con_anyKey();
 }
 
 /*
@@ -1245,6 +1337,8 @@ void view_checkout()
             case 3:
                 view_checkoutEditAgent(&n_agent_id);
                 continue;
+            case 4:
+                break;
             default:
                 continue;
             }
@@ -1257,8 +1351,8 @@ void view_checkout()
                 // place order
 
                 // Calculate delivery date
-                deliveryDays = rd_getRangeInt(1, 4);
-                deliveryDays += ((int)totalKM / rd_getRangeInt(100, 300));
+                deliveryDays = rd_getRangeInt(1, 2);
+                deliveryDays += ((int)totalKM / rd_getRangeInt(30, 45));
                 deliveryDays += dt_dateTimeToDays(*dt_getTimeNow());
 
                 deliveryDate = dt_daysToDateTime(deliveryDays);
@@ -2167,7 +2261,7 @@ void view_settingsDisconnectBank()
 */
 
 /*
-    ========= Manage Products ==========
+    ========= Admin Manage ==========
 */
 
 // TODO:
@@ -2187,6 +2281,12 @@ void view_adminManageProducts()
     }
 }
 
+void view_adminManageOrders()
+{
+    if (!u_activeUser->is_login && !u_activeUser->is_seller)
+        return;
+}
+
 /*
-    ========= End Manage Products =======
+    ========= End Admin Manage =======
 */
