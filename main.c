@@ -54,6 +54,7 @@ void view_logout();
 
 void view_search();
 void view_productPage(db_Row *r_product);
+void view_productCardList(db_Row r_product);
 
 void view_cart();
 void view_cartEditItems();
@@ -424,16 +425,30 @@ void view_search()
     int n_input;
 
     char *s_productInput = (char *)malloc(sizeof(char) * 255);
-
-    // for advanced search
     char *s_categoryInput = (char *)malloc(sizeof(char) * 255);
-    char *s_ascendingInput = (char *)malloc(sizeof(char) * 255);
     char *s_priceStartInput = (char *)malloc(sizeof(char) * 255);
     char *s_priceEndInput = (char *)malloc(sizeof(char) * 255);
+
+    int n_baseIdx;
+
+    bool b_sort_ascending = true;
+    bool b_sort_alphabetical = true;
+    bool b_minmax_price = false;
 
     while (true)
     {
         con_clearScr();
+
+        // default values
+        strcpy(s_productInput, "");
+        strcpy(s_categoryInput, "");
+        strcpy(s_priceStartInput, "");
+        strcpy(s_priceEndInput, "");
+        b_sort_ascending = true;
+        b_sort_alphabetical = true;
+        b_minmax_price = false;
+        n_baseIdx = db_getColIdx(*t_products, "name");
+        // end default values
 
         (void)printf("How do you want to search? ");
         if (!u_activeUser->is_login)
@@ -458,38 +473,160 @@ void view_search()
             con_printColor("Enter keyword (press enter to show all products): ", FG_PROMPT);
             s_productInput = con_inputStr();
 
+            break;
+
+        case 2:
+            // Advanced Search
+            con_clearScr();
+            (void)printf("Advanced Search\n");
             vis_printBars(V_BAR, con_getSize()->x);
 
-            for (int i = 0; i < t_products->row_count; i++)
-            {
-                if (!t_products->rows[i].is_null)
-                {
-                    if (util_isSubstr(
-                            util_lowerStr(t_products->rows[i].elements[db_getColIdx(*t_products, "name")]),
-                            util_lowerStr(s_productInput)) ||
-                        util_isSubstr(
-                            util_lowerStr(t_products->rows[i].elements[db_getColIdx(*t_products, "description")]),
-                            util_lowerStr(s_productInput)) ||
-                        util_isSubstr(
-                            util_lowerStr(t_products->rows[i].elements[db_getColIdx(*t_products, "category")]),
-                            util_lowerStr(s_productInput)))
-                    {
+            con_printColor("Enter keyword (press enter to skip): ", FG_PROMPT);
+            s_productInput = con_inputStr();
 
-                        (void)printf("\n%s[ID:%d]%s"
-                                     "\n%s%s%s"
-                                     "\n%s"
-                                     "\n%sRp%s%s\n",
-                                     FG_MAGENTA, t_products->rows[i].id, FG_DEFAULT,
-                                     FG_CYAN, t_products->rows[i].elements[db_getColIdx(*t_products, "name")], FG_DEFAULT,
-                                     t_products->rows[i].elements[db_getColIdx(*t_products, "description")],
-                                     FG_GREEN, t_products->rows[i].elements[db_getColIdx(*t_products, "price")], FG_DEFAULT);
-                    }
-                }
+            con_printColor("Enter category (press enter to skip): ", FG_PROMPT);
+            s_categoryInput = con_inputStr();
+
+            vis_printBars(V_BAR, con_getSize()->x);
+            printf("How do you want to sort the product list?\n");
+            vis_printBars(V_BAR, con_getSize()->x);
+            vis_printListMenu(4, "Sort by name (default)", "Sort by price", "Sort by stock", "Sort by numbers sold");
+            vis_printBars(V_BAR, con_getSize()->x);
+
+            con_printColor("Selection: ", FG_PROMPT);
+            n_input = con_inputInt();
+
+            switch (n_input)
+            {
+            case 1:
+                n_baseIdx = db_getColIdx(*t_products, "name");
+                b_sort_alphabetical = true;
+                break;
+            case 2:
+                n_baseIdx = db_getColIdx(*t_products, "price");
+                b_sort_alphabetical = false;
+                break;
+            case 3:
+                n_baseIdx = db_getColIdx(*t_products, "stock");
+                b_sort_alphabetical = false;
+                break;
+            case 4:
+                n_baseIdx = db_getColIdx(*t_products, "numbers_sold");
+                b_sort_alphabetical = false;
+                break;
+            default:
+                n_baseIdx = db_getColIdx(*t_products, "name");
+                b_sort_alphabetical = true;
+                break;
             }
 
             vis_printBars(V_BAR, con_getSize()->x);
-            vis_printListMenu(1, "Select product by ID");
-            vis_printListOption("Any Key", "Search again / Back to search menu");
+            printf("Ascending or descending?\n");
+            vis_printBars(V_BAR, con_getSize()->x);
+            vis_printListMenu(2, "Ascending (default)", "Descending");
+            vis_printBars(V_BAR, con_getSize()->x);
+
+            con_printColor("Selection: ", FG_PROMPT);
+            n_input = con_inputInt();
+            switch (n_input)
+            {
+            case 1:
+                b_sort_ascending = true;
+                break;
+            case 2:
+                b_sort_ascending = false;
+                break;
+            default:
+                b_sort_ascending = true;
+            }
+
+            vis_printBars(V_BAR, con_getSize()->x);
+            printf("Do you want to set minimum/maximum price?\n");
+            vis_printBars(V_BAR, con_getSize()->x);
+            vis_printListMenu(2, "Yes", "No (default)");
+            vis_printBars(V_BAR, con_getSize()->x);
+
+            con_printColor("Selection: ", FG_PROMPT);
+            n_input = con_inputInt();
+
+            if (n_input == 1)
+            {
+                b_minmax_price = false;
+                vis_printBars(V_BAR, con_getSize()->x);
+
+                con_printColor("Minimum price (enter to skip): Rp", FG_PROMPT);
+                s_priceStartInput = con_inputStr();
+
+                con_printColor("Maximum price (enter to skip): Rp", FG_PROMPT);
+                s_priceEndInput = con_inputStr();
+
+                if (strlen(s_priceStartInput) <= 0 && strlen(s_priceEndInput) <= 0)
+                    b_minmax_price = false;
+            }
+            else
+                b_minmax_price = false;
+
+            break;
+        case 3:
+            return; // exit search
+        default:
+            continue;
+        }
+
+        // Show product
+        while (true)
+        {
+            con_clearScr();
+            printf("Search result\n");
+            vis_printBars(V_BAR, con_getSize()->x);
+
+            db_Row *search_result_row = db_getSortedRows(*t_products, n_baseIdx, b_sort_alphabetical, b_sort_ascending);
+
+            for (int i = 0; i < t_products->row_count; i++)
+            {
+                if (!search_result_row[i].is_null)
+                {
+                    if (strlen(s_productInput) > 0)
+                    {
+                        if (!(util_isSubstr(util_lowerStr(search_result_row[i].elements[db_getColIdx(*t_products, "name")]), util_lowerStr(s_productInput)) || util_isSubstr(util_lowerStr(search_result_row[i].elements[db_getColIdx(*t_products, "description")]), util_lowerStr(s_productInput))))
+                            continue;
+
+                        if (strlen(s_categoryInput) > 0)
+                            if (!util_isSubstr(util_lowerStr(search_result_row[i].elements[db_getColIdx(*t_products, "category")]), util_lowerStr(s_categoryInput)))
+                                continue;
+                    }
+
+                    if (strlen(s_categoryInput) > 0)
+                        if (!util_isSubstr(util_lowerStr(search_result_row[i].elements[db_getColIdx(*t_products, "category")]), util_lowerStr(s_categoryInput)))
+                            continue;
+
+                    if (strlen(s_priceStartInput) > 0)
+                        if (atoi(search_result_row[i].elements[db_getColIdx(*t_products, "price")]) < atoi(s_priceStartInput))
+                            continue;
+
+                    if (strlen(s_priceEndInput) > 0)
+                        if (atoi(search_result_row[i].elements[db_getColIdx(*t_products, "price")]) > atoi(s_priceEndInput))
+                            continue;
+
+                    // view product
+                    printf("\n%s[ID:%d]%s"
+                           " - %s[%s]"
+                           "\n%s%s%s"
+                           "\n%s"
+                           "\n%sSold: %s | Stock: %s"
+                           "\n%sRp%s%s\n",
+                           FG_MAGENTA, search_result_row[i].id, FG_DEFAULT,
+                           FG_YELLOW, search_result_row[i].elements[db_getColIdx(*t_products, "category")],
+                           FG_CYAN, search_result_row[i].elements[db_getColIdx(*t_products, "name")], FG_DEFAULT,
+                           search_result_row[i].elements[db_getColIdx(*t_products, "description")],
+                           FG_BLUE, search_result_row[i].elements[db_getColIdx(*t_products, "numbers_sold")], search_result_row[i].elements[db_getColIdx(*t_products, "stock")],
+                           FG_GREEN, search_result_row[i].elements[db_getColIdx(*t_products, "price")], FG_DEFAULT);
+                }
+            }
+            // end view
+
+            vis_printBars(V_BAR, con_getSize()->x);
+            vis_printListMenu(2, "Select product by ID", "Search again");
             vis_printBars(V_BAR, con_getSize()->x);
 
             con_printColor("Selection: ", FG_PROMPT);
@@ -517,26 +654,16 @@ void view_search()
 
                 view_productPage(db_selectRowWhereId(*t_products, n_input));
                 continue;
+            case 2:
+                break;
             default:
                 continue;
             }
 
             break;
-
-        case 2:
-            // Advanced Search
-            con_clearScr();
-            (void)printf("Advanced Search\n");
-            vis_printBars(V_BAR, con_getSize()->x);
-
-            break;
-        case 3:
-            break;
-        default:
-            continue;
         }
 
-        break;
+        continue;
     }
 }
 
@@ -671,6 +798,10 @@ void view_productPage(db_Row *r_product)
         break;
     }
 }
+
+/*
+    ========= End Search ==========
+*/
 
 /*
     ======== Cart ========
