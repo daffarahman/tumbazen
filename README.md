@@ -17,6 +17,8 @@ Tugas Besar 2 Konsep Pemrograman - Online Shop Menggunakan C
 
 ### Microsoft Visual C++ Compiler (Win)
 
+#### Using PowerShell (Recommended)
+
 `cl /Fetumbazen.exe *.c && rm *.obj`
 
 ## Running
