@@ -1,3 +1,1 @@
 |id|username|name|full_address|latitude|longitude|
-|1|daffarahman|Home|Jayan Rt/Rw 07/09 Blulukan Colomadu Karanganyar|-7.540046159173819|110.78196292794055|
-|3|zidan|Grand Mall|Slamet Riyadi St No.273, Penumping, Laweyan, Surakarta City, Central Java 57141|-7.5688722|110.8065479|
