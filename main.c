@@ -430,6 +430,7 @@ void view_search()
     char *s_priceEndInput = (char *)malloc(sizeof(char) * 255);
 
     int n_baseIdx;
+    int n_showMany;
 
     bool b_sort_ascending = true;
     bool b_sort_alphabetical = true;
@@ -566,6 +567,10 @@ void view_search()
             else
                 b_minmax_price = false;
 
+            vis_printBars(V_BAR, con_getSize()->x);
+            con_printColor("How many products you want to show? (press enter to show all): ", FG_PROMPT);
+            n_showMany = con_inputInt();
+
             break;
         case 3:
             return; // exit search
@@ -581,6 +586,8 @@ void view_search()
             vis_printBars(V_BAR, con_getSize()->x);
 
             db_Row *search_result_row = db_getSortedRows(*t_products, n_baseIdx, b_sort_alphabetical, b_sort_ascending);
+
+            int n_found = 0;
 
             for (int i = 0; i < t_products->row_count; i++)
             {
@@ -608,6 +615,9 @@ void view_search()
                         if (atoi(search_result_row[i].elements[db_getColIdx(*t_products, "price")]) > atoi(s_priceEndInput))
                             continue;
 
+                    if (n_showMany > 0 && n_found >= n_showMany)
+                        break;
+
                     // view product
                     printf("\n%s[ID:%d]%s"
                            " - %s[%s]"
@@ -621,12 +631,13 @@ void view_search()
                            search_result_row[i].elements[db_getColIdx(*t_products, "description")],
                            FG_BLUE, search_result_row[i].elements[db_getColIdx(*t_products, "numbers_sold")], search_result_row[i].elements[db_getColIdx(*t_products, "stock")],
                            FG_GREEN, search_result_row[i].elements[db_getColIdx(*t_products, "price")], FG_DEFAULT);
+
+                    n_found++;
                 }
             }
-            // end view
 
             vis_printBars(V_BAR, con_getSize()->x);
-            vis_printListMenu(2, "Select product by ID", "Search again");
+            vis_printListMenu(2, "Select product by ID", "Search again / Back to search menu");
             vis_printBars(V_BAR, con_getSize()->x);
 
             con_printColor("Selection: ", FG_PROMPT);
