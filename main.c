@@ -38,6 +38,7 @@ char *path_agents = "db/agents.txt";
 char *path_orderPackages = "db/order_packages.txt";
 char *path_returnRequest = "db/return_request.txt";
 
+// configurations for admins
 char *path_dbConfig = "config/admin.txt";
 
 // user
