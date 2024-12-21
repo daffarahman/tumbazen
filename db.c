@@ -8,7 +8,6 @@ static bool m_sort_asc = false;
 // defining the prototype here can technically make it private
 int compareRow(const void *a, const void *b);
 
-// allocating new table
 db_Table *db_newTable(int col_count)
 {
     db_Table *new_table = (db_Table *)malloc(sizeof(db_Table));
@@ -21,7 +20,6 @@ db_Table *db_newTable(int col_count)
     return new_table;
 }
 
-// allocating new row
 db_Row *db_newRow(int col_count)
 {
     db_Row *new_row = (db_Row *)malloc(sizeof(db_Row));
@@ -34,7 +32,6 @@ db_Row *db_newRow(int col_count)
     return new_row;
 }
 
-// parse new table from file
 db_Table *db_fileToTable(char *path, int col_count)
 {
     db_Table *new_table = db_newTable(col_count);
@@ -74,7 +71,6 @@ db_Table *db_fileToTable(char *path, int col_count)
     return new_table;
 }
 
-// converts char* into a db_Row* with col_count
 db_Row *db_strToRow(char *str, int col_count)
 {
     db_Row *new_row = db_newRow(col_count);
@@ -88,7 +84,6 @@ db_Row *db_strToRow(char *str, int col_count)
     return new_row;
 }
 
-// insert a row into a table
 void db_insertRow(db_Table *table, db_Row row)
 {
     table->row_count += 1;
@@ -96,7 +91,6 @@ void db_insertRow(db_Table *table, db_Row row)
     table->rows[table->row_count - 1] = row;
 }
 
-// print the table
 void db_printTable(db_Table table)
 {
     int *col_length = (int *)malloc(sizeof(int) * (table.col_count + 1));
@@ -154,7 +148,6 @@ void db_printTable(db_Table table)
     printf("+\n");
 }
 
-// save table to a file and overwrites existing file if already exist
 void db_saveTable(db_Table table, char *path)
 {
     FILE *fptr = fopen(path, "w");
@@ -176,7 +169,6 @@ void db_saveTable(db_Table table, char *path)
     fclose(fptr);
 }
 
-// get row where column col_ref value is val_ref
 db_Row *db_selectFirstRowWhere(db_Table table, int col_ref, char *val_ref)
 {
     for (int i = 0; i < table.row_count; i++)
@@ -197,7 +189,6 @@ db_Row *db_selectRowWhereId(db_Table table, int ref_id)
     return NULL;
 }
 
-// get the index from col_names
 int db_getColIdx(db_Table table, char *col_name)
 {
     for (int i = 0; i < table.col_count; i++)
@@ -206,7 +197,6 @@ int db_getColIdx(db_Table table, char *col_name)
     return -1;
 }
 
-// get the highest id from all of the non is_null rows
 int db_getHighestId(db_Table table)
 {
     int highest = 0;
@@ -217,7 +207,6 @@ int db_getHighestId(db_Table table)
     return highest;
 }
 
-// get how many occurences row where column value is this
 int db_getHowManyWhere(db_Table table, int col_ref, char *val_ref)
 {
     int res = 0;
@@ -232,7 +221,6 @@ int db_getHowManyWhere(db_Table table, int col_ref, char *val_ref)
     return res;
 }
 
-// get highest strlen of a column
 int db_getHighestColumnLength(db_Table table, int col_ref)
 {
     int res = 0;
@@ -250,7 +238,6 @@ int db_getHighestColumnLength(db_Table table, int col_ref)
     return res;
 }
 
-// returns sorted row
 db_Row *db_getSortedRows(db_Table table, int base_idx, bool alpha, bool asc)
 {
     db_Row *sorted_rows = (db_Row *)malloc(sizeof(db_Row) * table.row_count);

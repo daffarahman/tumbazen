@@ -10,7 +10,7 @@
 #include "datetime.h"
 #include "random.h"
 
-// store location
+// let's just set the store location be on UNS
 #define GPS_STORE_LOC_LAT -7.558619412433269
 #define GPS_STORE_LOC_LON 110.85807559904933
 
@@ -26,6 +26,7 @@ db_Table *t_agents;
 db_Table *t_orderPackages;
 db_Table *t_returnRequest;
 
+// path for the tables
 char *path_users = "db/user_accounts.txt";
 char *path_carts = "db/user_carts.txt";
 char *path_products = "db/products.txt";
@@ -45,7 +46,7 @@ User *u_activeUser;
 // configs
 Config *db_conf;
 
-// views
+// views... so many views
 void view_menu();
 
 void view_login();
@@ -94,10 +95,6 @@ int main()
     db_conf = conf_newConfig();
     conf_addFromFile(db_conf, "config/admin.txt");
 
-    // db_printTable(*t_products);
-    // db_printTable(*t_orders);
-    // con_anyKey();
-
     // active user recorder
     u_activeUser = usr_newUser();
 
@@ -129,18 +126,17 @@ void view_menu()
         /*
             different mode different title
         */
-
         if (u_activeUser->is_login)
         {
             if (u_activeUser->is_seller)
-                (void)printf("%sWelcome to Seller Center%s\nLogged in as: %s%s%s!\n", FG_YELLOW, FG_DEFAULT, FG_GREEN, u_activeUser->username, FG_DEFAULT);
+                printf("%sWelcome to Seller Center%s\nLogged in as: %s%s%s!\n", FG_YELLOW, FG_DEFAULT, FG_GREEN, u_activeUser->username, FG_DEFAULT);
             else
             {
-                (void)printf("Welcome, %s%s%s!\n", FG_GREEN, u_activeUser->username, FG_DEFAULT);
+                printf("Welcome, %s%s%s!\n", FG_GREEN, u_activeUser->username, FG_DEFAULT);
             }
         }
         else
-            (void)printf("%sNot logged in!%s\n", FG_RED, FG_DEFAULT);
+            printf("%sNot logged in!%s\n", FG_RED, FG_DEFAULT);
 
         vis_printBars(V_BAR, con_getSize()->x);
 
@@ -270,7 +266,7 @@ void view_login()
     {
         con_clearScr();
 
-        (void)printf("Login as?\n");
+        printf("Login as?\n");
         vis_printBars(V_BAR, con_getSize()->x);
         vis_printListMenu(3, "Customer", "Seller", "Exit");
         vis_printBars(V_BAR, con_getSize()->x);
@@ -284,7 +280,7 @@ void view_login()
             // Login as a customer
             con_clearScr();
 
-            (void)printf("Login as customer\n");
+            printf("Login as customer\n");
             vis_printBars(V_BAR, con_getSize()->x);
 
             con_printColor("Username: ", FG_PROMPT);
@@ -317,7 +313,7 @@ void view_login()
             // Login as a seller
             con_clearScr();
 
-            (void)printf("Login as administrator\n");
+            printf("Login as administrator\n");
             vis_printBars(V_BAR, con_getSize()->x);
 
             con_printColor("Enter admin username: ", FG_PROMPT);
@@ -382,7 +378,7 @@ void view_signup()
     char *s_usnInput = (char *)malloc(sizeof(char) * 255);
     char *s_pwInput = (char *)malloc(sizeof(char) * 255);
 
-    (void)printf("Create new account\n");
+    printf("Create new account\n");
     vis_printBars(V_BAR, con_getSize()->x);
 
     con_printColor("New username: ", FG_PROMPT);
@@ -451,10 +447,10 @@ void view_search()
         n_baseIdx = db_getColIdx(*t_products, "name");
         // end default values
 
-        (void)printf("How do you want to search? ");
+        printf("How do you want to search? ");
         if (!u_activeUser->is_login)
             con_printColor("(You are not logged in)", FG_ERROR);
-        (void)printf("\n");
+        printf("\n");
 
         vis_printBars(V_BAR, con_getSize()->x);
         vis_printListMenu(3, "Simple search", "Advanced search", "Exit");
@@ -468,7 +464,7 @@ void view_search()
         case 1:
             // Simple Search
             con_clearScr();
-            (void)printf("Enter keyword for the product you want to search\n");
+            printf("Enter keyword for the product you want to search\n");
             vis_printBars(V_BAR, con_getSize()->x);
 
             con_printColor("Enter keyword (press enter to show all products): ", FG_PROMPT);
@@ -479,7 +475,7 @@ void view_search()
         case 2:
             // Advanced Search
             con_clearScr();
-            (void)printf("Advanced Search\n");
+            printf("Advanced Search\n");
             vis_printBars(V_BAR, con_getSize()->x);
 
             con_printColor("Enter keyword (press enter to skip): ", FG_PROMPT);
@@ -687,7 +683,7 @@ void view_productPage(db_Row *r_product)
     {
         con_clearScr();
 
-        (void)printf("Product details\n");
+        printf("Product details\n");
         vis_printBars(V_BAR, con_getSize()->x);
 
         printf("\n%s%s%s\n", FG_CYAN, r_product->elements[db_getColIdx(*t_products, "name")], FG_DEFAULT);
@@ -713,7 +709,6 @@ void view_productPage(db_Row *r_product)
         if (u_activeUser->is_login)
         {
             if (u_activeUser->is_seller)
-                // TODO:
                 vis_printListMenu(1, "Back to search");
             else
                 vis_printListMenu(2, "Add product to cart", "Search another product / go back");
@@ -732,7 +727,6 @@ void view_productPage(db_Row *r_product)
         {
             if (u_activeUser->is_seller)
             {
-                // TODO:
                 switch (n_input)
                 {
                 case 1:
@@ -796,10 +790,8 @@ void view_productPage(db_Row *r_product)
         }
         else
         {
-            // TODO:
             switch (n_input)
             {
-
             case 1:
                 break;
             default:
@@ -848,15 +840,15 @@ void view_cart()
             {
                 if (strcmp(t_carts->rows[i].elements[db_getColIdx(*t_carts, "username")], u_activeUser->username) == 0)
                 {
-                    (void)printf("\n%s[Cart Item ID:%d]%s", FG_MAGENTA, t_carts->rows[i].id, FG_DEFAULT);
-                    (void)printf("\n%s", db_selectRowWhereId(*t_products, atoi(t_carts->rows[i].elements[db_getColIdx(*t_carts, "product_id")]))->elements[db_getColIdx(*t_products, "name")]);
-                    (void)printf("\n%sQty:%s%s", FG_GREEN, t_carts->rows[i].elements[db_getColIdx(*t_carts, "quantity")], FG_DEFAULT);
+                    printf("\n%s[Cart Item ID:%d]%s", FG_MAGENTA, t_carts->rows[i].id, FG_DEFAULT);
+                    printf("\n%s", db_selectRowWhereId(*t_products, atoi(t_carts->rows[i].elements[db_getColIdx(*t_carts, "product_id")]))->elements[db_getColIdx(*t_products, "name")]);
+                    printf("\n%sQty:%s%s", FG_GREEN, t_carts->rows[i].elements[db_getColIdx(*t_carts, "quantity")], FG_DEFAULT);
                     n_currentPrice =
                         atoi(t_carts->rows[i].elements[db_getColIdx(*t_carts, "quantity")]) *
                         atoi(db_selectRowWhereId(*t_products, atoi(
                                                                   t_carts->rows[i].elements[db_getColIdx(*t_carts, "product_id")]))
                                  ->elements[db_getColIdx(*t_products, "price")]);
-                    (void)printf("\n%sTotal: %sRp%d\n", FG_GREEN, FG_DEFAULT, n_currentPrice);
+                    printf("\n%sTotal: %sRp%d\n", FG_GREEN, FG_DEFAULT, n_currentPrice);
 
                     n_totalPrice += n_currentPrice;
 
@@ -955,15 +947,15 @@ void view_cartEditItems()
     printf("Edit your cart item quantity\n");
     vis_printBars(V_BAR, con_getSize()->x);
 
-    (void)printf("\n%s[Cart Item ID:%d]%s", FG_MAGENTA, cart_row->id, FG_DEFAULT);
-    (void)printf("\n%s", db_selectRowWhereId(*t_products, atoi(cart_row->elements[db_getColIdx(*t_carts, "product_id")]))->elements[db_getColIdx(*t_products, "name")]);
-    (void)printf("\n%sQty:%s%s", FG_GREEN, cart_row->elements[db_getColIdx(*t_carts, "quantity")], FG_DEFAULT);
+    printf("\n%s[Cart Item ID:%d]%s", FG_MAGENTA, cart_row->id, FG_DEFAULT);
+    printf("\n%s", db_selectRowWhereId(*t_products, atoi(cart_row->elements[db_getColIdx(*t_carts, "product_id")]))->elements[db_getColIdx(*t_products, "name")]);
+    printf("\n%sQty:%s%s", FG_GREEN, cart_row->elements[db_getColIdx(*t_carts, "quantity")], FG_DEFAULT);
     n_totalPrice =
         atoi(cart_row->elements[db_getColIdx(*t_carts, "quantity")]) *
         atoi(db_selectRowWhereId(*t_products, atoi(
                                                   cart_row->elements[db_getColIdx(*t_carts, "product_id")]))
                  ->elements[db_getColIdx(*t_products, "price")]);
-    (void)printf("\n%sTotal: %sRp%d\n", FG_GREEN, FG_DEFAULT, n_totalPrice);
+    printf("\n%sTotal: %sRp%d\n", FG_GREEN, FG_DEFAULT, n_totalPrice);
 
     vis_printBars(V_BAR, con_getSize()->x);
     printf("- Make it 0 to delete it"
@@ -1123,7 +1115,7 @@ void view_orders()
             }
 
             if (n_found_od <= 0)
-                con_printColor("Currently no orders shipped!\n", FG_ERROR);
+                con_printColor("Currently no orders!\n", FG_ERROR);
 
             vis_printBars(V_BAR, con_getSize()->x);
 
@@ -1350,9 +1342,9 @@ void view_checkout()
             {
                 if (strcmp(t_carts->rows[i].elements[db_getColIdx(*t_carts, "username")], u_activeUser->username) == 0)
                 {
-                    (void)printf("\n%s\n", db_selectRowWhereId(*t_products, atoi(t_carts->rows[i].elements[db_getColIdx(*t_carts, "product_id")]))->elements[db_getColIdx(*t_products, "name")]);
-                    (void)printf("%sRp%s ", FG_YELLOW, db_selectRowWhereId(*t_products, atoi(t_carts->rows[i].elements[db_getColIdx(*t_carts, "product_id")]))->elements[db_getColIdx(*t_products, "price")]);
-                    (void)printf("%sx%s%s\n", FG_GREEN, t_carts->rows[i].elements[db_getColIdx(*t_carts, "quantity")], FG_DEFAULT);
+                    printf("\n%s\n", db_selectRowWhereId(*t_products, atoi(t_carts->rows[i].elements[db_getColIdx(*t_carts, "product_id")]))->elements[db_getColIdx(*t_products, "name")]);
+                    printf("%sRp%s ", FG_YELLOW, db_selectRowWhereId(*t_products, atoi(t_carts->rows[i].elements[db_getColIdx(*t_carts, "product_id")]))->elements[db_getColIdx(*t_products, "price")]);
+                    printf("%sx%s%s\n", FG_GREEN, t_carts->rows[i].elements[db_getColIdx(*t_carts, "quantity")], FG_DEFAULT);
 
                     totalPrice +=
                         (atoi(t_carts->rows[i].elements[db_getColIdx(*t_carts, "quantity")]) *
@@ -1607,7 +1599,7 @@ void view_checkoutEditAddress(int *p_address)
 
         n_found = 0;
 
-        (void)printf("Select your shipping address\n");
+        printf("Select your shipping address\n");
         vis_printBars(V_BAR, con_getSize()->x);
 
         for (int i = 0; i < t_address->row_count; i++)
@@ -1626,7 +1618,7 @@ void view_checkoutEditAddress(int *p_address)
 
         if (n_found <= 0)
         {
-            (void)printf("\n%sYou don't have any shipping address, please add it in settings!\n%s", FG_ERROR, FG_DEFAULT);
+            printf("\n%sYou don't have any shipping address, please add it in settings!\n%s", FG_ERROR, FG_DEFAULT);
         }
 
         vis_printBars(V_BAR, con_getSize()->x);
@@ -1711,7 +1703,7 @@ void view_checkoutEditPayment(int *p_bankAccount)
 
         n_found = 0;
 
-        (void)printf("Select your payment type\n");
+        printf("Select your payment type\n");
         vis_printBars(V_BAR, con_getSize()->x);
 
         for (int i = 0; i < t_userPayments->row_count; i++)
@@ -1737,7 +1729,7 @@ void view_checkoutEditPayment(int *p_bankAccount)
 
         if (n_found <= 0)
         {
-            (void)printf("\n%sYou don't have any payment connected to your account!, please add it in settings!\n%s", FG_ERROR, FG_DEFAULT);
+            printf("\n%sYou don't have any payment connected to your account!, please add it in settings!\n%s", FG_ERROR, FG_DEFAULT);
         }
 
         vis_printBars(V_BAR, con_getSize()->x);
@@ -2128,7 +2120,7 @@ void view_settingsAddAddress()
 
     con_clearScr();
 
-    (void)printf("Add new address\n");
+    printf("Add new address\n");
     vis_printBars(V_BAR, con_getSize()->x);
 
     con_printColor("Enter address name: ", FG_PROMPT);

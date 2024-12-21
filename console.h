@@ -46,20 +46,26 @@ typedef struct
     int y;
 } con_Coord;
 
+// get the size of your console window, x = width, y = height
 con_Coord *con_getSize();
+// clears the screen
 void con_clearScr();
 
-// input
+// never ever use scanf, this is sooo much better, just like in python
 int con_inputInt();
+// again, use this instead scanf
 char *con_inputStr();
+// love this one, when you type your password, it only shows *****, amazing
 char *con_inputPwd();
+// press any key to continue
 void con_anyKey();
 
-// echo
+// set the echo to on
 void con_echoOn();
+// set the echo to off
 void con_echoOff();
 
-// output
+// output string a color, no it doesn't support formatting.. yet
 void con_printColor(char *str, char *color);
 
 #endif

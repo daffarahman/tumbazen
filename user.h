@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+// stores current user data, used for authetication and validating user data
 typedef struct
 {
     char *username;
@@ -11,6 +12,7 @@ typedef struct
     bool is_seller;
 } User;
 
+// perfectly said
 User *usr_newUser();
 
 #endif

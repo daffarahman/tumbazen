@@ -1,13 +1,7 @@
 #include "utils.h"
 
-// function to trim the string (trim, removes ' ' \n,\r,\t)
 char *util_trimStr(char *str)
 {
-    // char *new_s = strtok(strdup(str), " \n\r\t");
-    // if (new_s)
-    //     return new_s;
-    // return str;
-
     char *res = strdup(str);
     char *start = res;
     char *end;
@@ -33,7 +27,6 @@ char *util_trimStr(char *str)
     return res;
 }
 
-// lower the string
 char *util_lowerStr(char *str)
 {
     char *lowered = strdup(str);
@@ -45,7 +38,6 @@ char *util_lowerStr(char *str)
     return lowered;
 }
 
-// Check if a string is a substring of str
 bool util_isSubstr(char *str, char *substr)
 {
     char *res = strstr(strdup(str), strdup(substr));
@@ -54,7 +46,6 @@ bool util_isSubstr(char *str, char *substr)
     return false;
 }
 
-// converts integer to a char* because itoa for some reason didn't work
 char *util_intToStr(int n)
 {
     char *res = (char *)malloc(sizeof(char) * 128);
