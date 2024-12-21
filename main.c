@@ -643,10 +643,11 @@ void view_search()
             con_printColor("Selection: ", FG_PROMPT);
             n_input = con_inputInt();
 
+            db_Row *product_row;
+
             switch (n_input)
             {
             case 1:
-                db_Row *product_row;
 
                 while (true)
                 {

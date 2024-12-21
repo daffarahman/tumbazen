@@ -10,6 +10,7 @@
 #include <termios.h>
 #else
 #include <windows.h>
+#include <conio.h>
 #endif
 
 #include "utils.h"
