@@ -77,6 +77,7 @@ void view_settingsDisconnectBank();
 
 void view_adminManageProducts();
 void view_adminAddProduct();
+void view_adminEditProduct();
 void view_adminManageOrders();
 
 int main()
@@ -2436,12 +2437,10 @@ void view_adminManageProducts()
     {
         con_clearScr();
 
-        printf("Product Database View\n");
-        vis_printBars(V_BAR, con_getSize()->x);
+        con_printColor("Product Database View\n", FG_YELLOW);
 
         db_printTable(*t_products);
 
-        vis_printBars(V_BAR, con_getSize()->x);
         vis_printListMenu(3, "Add new product", "Edit product", "Exit");
         vis_printBars(V_BAR, con_getSize()->x);
 
@@ -2455,6 +2454,7 @@ void view_adminManageProducts()
             view_adminAddProduct();
             continue;
         case 2:
+            view_adminEditProduct();
             continue;
         case 3:
             break;
@@ -2544,6 +2544,78 @@ void view_adminAddProduct()
 
     con_printColor("Product successfuly added! (Press Any Key) . . .", FG_GREEN);
     con_anyKey();
+}
+
+void view_adminEditProduct()
+{
+    if (!u_activeUser->is_login && !u_activeUser->is_seller)
+        return;
+
+    int n_input;
+
+    char *s_nameInput = (char *)malloc(sizeof(char) * 255);
+    char *s_categoryInput = (char *)malloc(sizeof(char) * 255);
+    char *s_descriptionInput = (char *)malloc(sizeof(char) * 255);
+
+    char *s_priceInput = (char *)malloc(sizeof(char) * 255);
+    char *s_stockInput = (char *)malloc(sizeof(char) * 255);
+    char *s_weightInput = (char *)malloc(sizeof(char) * 255);
+
+    db_Row *edit_product_row;
+
+    con_printColor("Enter product ID you want to edit: ", FG_PROMPT);
+    n_input = con_inputInt();
+
+    edit_product_row = db_selectRowWhereId(*t_products, n_input);
+    if (!edit_product_row)
+    {
+        con_printColor("Product with that ID does not exist! (Press Any Key) . . . ", FG_ERROR);
+        con_anyKey();
+        return;
+    }
+
+    con_clearScr();
+
+    printf("Edit product with ID: %d\n", n_input);
+    vis_printBars(V_BAR, con_getSize()->x);
+
+    printf("Name: %s\n", edit_product_row->elements[db_getColIdx(*t_products, "name")]);
+    con_printColor("Edit to (press enter to not edit): ", FG_PROMPT);
+    s_nameInput = con_inputStr();
+    if (strlen(s_nameInput) > 0)
+        edit_product_row->elements[db_getColIdx(*t_products, "name")] = strdup(s_nameInput);
+
+    printf("Description: %s\n", edit_product_row->elements[db_getColIdx(*t_products, "description")]);
+    con_printColor("Edit to (press enter to not edit): ", FG_PROMPT);
+    s_descriptionInput = con_inputStr();
+    if (strlen(s_descriptionInput) > 0)
+        edit_product_row->elements[db_getColIdx(*t_products, "description")] = strdup(s_descriptionInput);
+
+    printf("Category: %s\n", edit_product_row->elements[db_getColIdx(*t_products, "category")]);
+    con_printColor("Edit to (press enter to not edit): ", FG_PROMPT);
+    s_categoryInput = con_inputStr();
+    if (strlen(s_categoryInput) > 0)
+        edit_product_row->elements[db_getColIdx(*t_products, "category")] = strdup(s_categoryInput);
+
+    printf("price: Rp%s\n", edit_product_row->elements[db_getColIdx(*t_products, "price")]);
+    con_printColor("Edit to (press enter to not edit): Rp", FG_PROMPT);
+    s_priceInput = con_inputStr();
+    if (strlen(s_priceInput) > 0)
+        edit_product_row->elements[db_getColIdx(*t_products, "price")] = util_intToStr(atoi(s_priceInput));
+
+    printf("stock: %s\n", edit_product_row->elements[db_getColIdx(*t_products, "stock")]);
+    con_printColor("Edit to (press enter to not edit): ", FG_PROMPT);
+    s_stockInput = con_inputStr();
+    if (strlen(s_stockInput) > 0)
+        edit_product_row->elements[db_getColIdx(*t_products, "stock")] = util_intToStr(atoi(s_stockInput));
+
+    printf("weight: %s gr\n", edit_product_row->elements[db_getColIdx(*t_products, "weight")]);
+    con_printColor("Edit to (press enter to not edit) : ", FG_PROMPT);
+    s_weightInput = con_inputStr();
+    if (strlen(s_weightInput) > 0)
+        edit_product_row->elements[db_getColIdx(*t_products, "weight")] = util_intToStr(atoi(s_weightInput));
+
+    db_saveTable(*t_products, path_products);
 }
 
 void view_adminManageOrders()
