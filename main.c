@@ -130,7 +130,16 @@ void view_menu()
         if (u_activeUser->is_login)
         {
             if (u_activeUser->is_seller)
+            {
+                int totalRevenue = 0;
+                for (int i = 0; i < t_orders->row_count; i++)
+                    totalRevenue += atoi(t_orders->rows[i].elements[db_getColIdx(*t_orders, "total_price")]);
+
                 printf("%sWelcome to Seller Center%s\nLogged in as: %s%s%s!\n", FG_YELLOW, FG_DEFAULT, FG_GREEN, u_activeUser->username, FG_DEFAULT);
+
+                vis_printBars(V_BAR, con_getSize()->x);
+                printf("Store's Revenue: %sRp%d%s\n", FG_GREEN, totalRevenue, FG_DEFAULT);
+            }
             else
             {
                 printf("Welcome, %s%s%s!\n", FG_GREEN, u_activeUser->username, FG_DEFAULT);
