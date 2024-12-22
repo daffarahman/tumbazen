@@ -76,6 +76,7 @@ void view_settingsConnectBank();
 void view_settingsDisconnectBank();
 
 void view_adminManageProducts();
+void view_adminAddProduct();
 void view_adminManageOrders();
 
 int main()
@@ -394,6 +395,13 @@ void view_signup()
     con_printColor("New username: ", FG_PROMPT);
     s_usnInput = con_inputStr();
 
+    if (strlen(s_usnInput) <= 0)
+    {
+        con_printColor("Username cannot be empty! (Press Any Key) . . .", FG_ERROR);
+        con_anyKey();
+        return;
+    }
+
     if (db_selectFirstRowWhere(*t_users, db_getColIdx(*t_users, "username"), s_usnInput))
     {
         con_printColor("Username already exist! (Press Any Key) . . .", FG_ERROR);
@@ -403,6 +411,13 @@ void view_signup()
 
     con_printColor("Password: ", FG_PROMPT);
     s_pwInput = con_inputPwd();
+
+    if (strlen(util_trimStr(s_pwInput)) <= 0)
+    {
+        con_printColor("Password cannot be empty! (Press Any Key) . . .", FG_ERROR);
+        con_anyKey();
+        return;
+    }
 
     db_Row *signup_row = db_newRow(t_users->col_count);
     signup_row->id = db_getHighestId(*t_users) + 1;
@@ -2415,15 +2430,120 @@ void view_adminManageProducts()
     if (!u_activeUser->is_login && !u_activeUser->is_seller)
         return;
 
+    int n_input;
+
     while (true)
     {
         con_clearScr();
+
+        printf("Product Database View\n");
+        vis_printBars(V_BAR, con_getSize()->x);
+
         db_printTable(*t_products);
 
-        con_anyKey();
+        vis_printBars(V_BAR, con_getSize()->x);
+        vis_printListMenu(3, "Add new product", "Edit product", "Exit");
+        vis_printBars(V_BAR, con_getSize()->x);
+
+        con_printColor("Selection: ", FG_PROMPT);
+        n_input = con_inputInt();
+
+        switch (n_input)
+        {
+        case 1:
+            // Add new products
+            view_adminAddProduct();
+            continue;
+        case 2:
+            continue;
+        case 3:
+            break;
+        default:
+            continue;
+        }
 
         break;
     }
+}
+
+void view_adminAddProduct()
+{
+    if (!u_activeUser->is_login && !u_activeUser->is_seller)
+        return;
+
+    char *s_nameInput = (char *)malloc(sizeof(char) * 255);
+    char *s_categoryInput = (char *)malloc(sizeof(char) * 255);
+    char *s_descriptionInput = (char *)malloc(sizeof(char) * 255);
+
+    int n_priceInput;
+    int n_stockInput;
+    int n_weightInput;
+
+    db_Row *new_product_row = db_newRow(t_products->col_count);
+
+    con_clearScr();
+
+    printf("Add new product to the database\n");
+    vis_printBars(V_BAR, con_getSize()->x);
+
+    con_printColor("Enter product name: ", FG_PROMPT);
+    s_nameInput = con_inputStr();
+
+    if (strlen(s_nameInput) <= 0)
+    {
+        con_printColor("Product name cannot be empty! (Press Any Key) . . .", FG_ERROR);
+        con_anyKey();
+        return;
+    }
+
+    con_printColor("Enter product category: ", FG_PROMPT);
+    s_categoryInput = con_inputStr();
+
+    if (strlen(s_categoryInput) <= 0)
+    {
+        con_printColor("Product category cannot be empty! (Press Any Key) . . .", FG_ERROR);
+        con_anyKey();
+        return;
+    }
+
+    con_printColor("Enter a quick description about the product\n> ", FG_PROMPT);
+    s_descriptionInput = con_inputStr();
+
+    con_printColor("Enter product price: Rp", FG_PROMPT);
+    n_priceInput = con_inputInt();
+
+    if (n_priceInput < 0)
+        n_priceInput = 0;
+
+    con_printColor("Enter current stock available: ", FG_PROMPT);
+    n_stockInput = con_inputInt();
+
+    if (n_stockInput < 0)
+        n_stockInput = 0;
+
+    con_printColor("Enter product weight (in grams): ", FG_PROMPT);
+    n_weightInput = con_inputInt();
+
+    if (n_stockInput < 0)
+        n_stockInput = 0;
+
+    // Adding product to database
+    new_product_row->id = db_getHighestId(*t_products) + 1;
+
+    new_product_row->elements[db_getColIdx(*t_products, "name")] = strdup(s_nameInput);
+    new_product_row->elements[db_getColIdx(*t_products, "description")] = strdup(s_descriptionInput);
+    new_product_row->elements[db_getColIdx(*t_products, "category")] = strdup(s_categoryInput);
+
+    new_product_row->elements[db_getColIdx(*t_products, "price")] = util_intToStr(n_priceInput);
+    new_product_row->elements[db_getColIdx(*t_products, "stock")] = util_intToStr(n_stockInput);
+    new_product_row->elements[db_getColIdx(*t_products, "weight")] = util_intToStr(n_weightInput);
+    new_product_row->elements[db_getColIdx(*t_products, "numbers_sold")] = util_intToStr(0);
+
+    db_insertRow(t_products, *new_product_row);
+    db_saveTable(*t_products, path_products);
+
+    con_printColor("Product successfuly added! (Press Any Key) . . .", FG_GREEN);
+    con_anyKey();
 }
 
 void view_adminManageOrders()
