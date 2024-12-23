@@ -1277,10 +1277,11 @@ void view_orderDetail(db_Row r_order)
         printf("%s\n", db_selectRowWhereId(*t_bankAccounts, atoi(r_order.elements[db_getColIdx(*t_orders, "card_id")]))->elements[db_getColIdx(*t_bankAccounts, "bank")]);
         con_printColor("Agent: ", FG_GREEN);
         printf("%s\n", db_selectRowWhereId(*t_agents, atoi(r_order.elements[db_getColIdx(*t_orders, "agent_id")]))->elements[db_getColIdx(*t_agents, "name")]);
+        con_printColor("Ordered on: ", FG_GREEN);
+        printf("%s\n", r_order.elements[db_getColIdx(*t_orders, "order_date")]);
 
         vis_printBars(V_BAR, con_getSize()->x);
-        printf("Products\n");
-        vis_printBars(V_BAR, con_getSize()->x);
+        con_printColor("Products", FG_YELLOW);
 
         for (int i = 0; i < t_orderPackages->row_count; i++)
         {
@@ -1290,8 +1291,8 @@ void view_orderDetail(db_Row r_order)
                 if (strcmp(t_orderPackages->rows[i].elements[db_getColIdx(*t_orderPackages, "order_id")], util_intToStr(r_order.id)) == 0)
                 {
                     detailProduct_row = db_selectRowWhereId(*t_products, atoi(t_orderPackages->rows[i].elements[db_getColIdx(*t_orderPackages, "product_id")]));
-                    printf("\n%s\n", detailProduct_row->elements[db_getColIdx(*t_products, "name")]);
-                    printf("%sRp%s %sx%s%s\n",
+                    printf("\n%s", detailProduct_row->elements[db_getColIdx(*t_products, "name")]);
+                    printf(" [%sRp%s %sx%s%s]",
                            FG_GREEN,
                            detailProduct_row->elements[db_getColIdx(*t_products, "price")],
                            FG_YELLOW,
@@ -1300,6 +1301,14 @@ void view_orderDetail(db_Row r_order)
                 }
             }
         }
+
+        printf("\n");
+
+        vis_printBars(V_BAR, con_getSize()->x);
+        con_printColor("Total price: Rp", FG_GREEN);
+        printf("%s\n", r_order.elements[db_getColIdx(*t_orders, "total_price")]);
+        con_printColor("Total shipment fee: Rp", FG_GREEN);
+        printf("%s\n", r_order.elements[db_getColIdx(*t_orders, "shipping_fee")]);
 
         vis_printBars(V_BAR, con_getSize()->x);
         vis_printListMenu(1, "Exit");
