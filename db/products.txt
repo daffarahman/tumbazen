@@ -1,12 +1,12 @@
 |id|name|description|price|category|stock|numbers_sold|weight|
-|1|Aqua 600ml|Air mineral kemasan 600ml|3500|Minuman|10|260|600|
+|1|Aqua 600ml|Air mineral kemasan 600ml|3500|Minuman|7|263|600|
 |2|Indomie Goreng|Mi instan rasa original goreng|3000|Makanan|97|503|85|
 |3|Silverqueen Almond 62g|Cokelat dengan almond|13500|Makanan|30|150|62|
 |4|Beng-Beng|Wafer cokelat dengan karamel|2500|Makanan|200|400|22|
 |5|Chitato BBQ 68g|Keripik kentang rasa BBQ|10000|Makanan|35|305|68|
 |6|Pocari Sweat 500ml|Minuman isotonik kemasan botol|7000|Minuman|60|250|500|
 |7|Teh Botol Sosro 350ml|Teh manis dalam botol kaca|5000|Minuman|88|422|350|
-|8|Nutrisari Jeruk|Minuman serbuk rasa jeruk|2000|Minuman|150|350|10|
+|8|Nutrisari Jeruk|Minuman serbuk rasa jeruk|2000|Minuman|148|352|10|
 |9|Kopi Kapal Api 10g|Kopi hitam instan bubuk|1000|Minuman|300|700|10|
 |10|Sari Roti Tawar|Roti tawar putih tanpa kulit|12000|Makanan|20|100|200|
 |11|Tango Wafer Chocolate|Wafer rasa cokelat 65g|8000|Makanan|50|200|65|
@@ -18,5 +18,5 @@
 |17|Cheetos Flamin' Hot 75g|Keripik jagung pedas|8500|Makanan|48|252|75|
 |18|Fanta Strawberry 390ml|Minuman soda rasa stroberi|7000|Minuman|63|307|390|
 |19|Mie Sedap Kari Ayam|Mi instan rasa kari ayam|3000|Makanan|35|495|85|
-|20|Ultra Milk Cokelat 250ml|Susu cair rasa cokelat|6500|Minuman|81|529|250|
+|20|Ultra Milk Cokelat 250ml|Susu cair rasa cokelat|6500|Minuman|79|531|250|
 |21|Coca-Cola|Minuman soda menyegarkan dari coca cola segarrrr|5000|Minuman|25|0|200|

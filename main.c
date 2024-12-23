@@ -62,6 +62,7 @@ void view_cart();
 void view_cartEditItems();
 
 void view_orders();
+void view_orderDetail(db_Row r_order);
 
 void view_checkout();
 void view_checkoutEditAddress(int *p_address);
@@ -200,7 +201,7 @@ void view_menu()
                     continue;
                 case 3:
                     // admin manage orders
-
+                    view_adminManageOrders();
                     continue;
                 case 4:
                     // admin log out
@@ -1044,274 +1045,277 @@ void view_orders()
     db_Row *detailProduct_row = NULL;
 
     // user view
-    if (!u_activeUser->is_seller)
+    while (true)
     {
-        while (true)
+        return_row = NULL;
+        request_row = NULL;
+        detail_row = NULL;
+
+        con_clearScr();
+
+        n_found_od = 0;
+
+        printf("My orders and status\n");
+
+        vis_printBars(V_BAR, con_getSize()->x);
+
+        for (int i = 0; i < t_orders->row_count; i++)
         {
-            return_row = NULL;
-            request_row = NULL;
-            detail_row = NULL;
+            n_found_pkg = 0;
 
-            con_clearScr();
-
-            n_found_od = 0;
-
-            printf("My orders and status\n");
-
-            vis_printBars(V_BAR, con_getSize()->x);
-
-            for (int i = 0; i < t_orders->row_count; i++)
+            if (!t_orders->rows[i].is_null)
             {
-                n_found_pkg = 0;
-
-                if (!t_orders->rows[i].is_null)
+                if (strcmp(t_orders->rows[i].elements[db_getColIdx(*t_orders, "username")], u_activeUser->username) == 0)
                 {
-                    if (strcmp(t_orders->rows[i].elements[db_getColIdx(*t_orders, "username")], u_activeUser->username) == 0)
+                    int daysLeft = dt_getDaysBetween(
+                        *dt_getTimeNow(),
+                        *dt_strToDate(strdup(t_orders->rows[i].elements[db_getColIdx(*t_orders, "delivery_date")])));
+                    bool isDelivered = (daysLeft > 0)
+                                           ? false
+                                           : true;
+                    printf("\n%s[Order ID: %d]%s\n", FG_MAGENTA, t_orders->rows[i].id, FG_DEFAULT);
+
+                    con_printColor("Products: ", FG_GREEN);
+                    int j;
+                    int product_count = db_getHowManyWhere(*t_orderPackages, db_getColIdx(*t_orderPackages, "order_id"), util_intToStr(t_orders->rows[i].id));
+                    for (j = 0; j < t_orderPackages->row_count; j++)
                     {
-                        int daysLeft = dt_getDaysBetween(
-                            *dt_getTimeNow(),
-                            *dt_strToDate(strdup(t_orders->rows[i].elements[db_getColIdx(*t_orders, "delivery_date")])));
-                        bool isDelivered = (daysLeft > 0)
-                                               ? false
-                                               : true;
-                        printf("\n%s[Order ID: %d]%s\n", FG_MAGENTA, t_orders->rows[i].id, FG_DEFAULT);
-
-                        con_printColor("Products: ", FG_GREEN);
-                        int j;
-                        int product_count = db_getHowManyWhere(*t_orderPackages, db_getColIdx(*t_orderPackages, "order_id"), util_intToStr(t_orders->rows[i].id));
-                        for (j = 0; j < t_orderPackages->row_count; j++)
+                        if (!t_orderPackages->rows[j].is_null)
                         {
-                            if (!t_orderPackages->rows[j].is_null)
+                            if (strcmp(t_orderPackages->rows[j].elements[db_getColIdx(*t_orderPackages, "order_id")], util_intToStr(t_orders->rows[i].id)) == 0)
                             {
-                                if (strcmp(t_orderPackages->rows[j].elements[db_getColIdx(*t_orderPackages, "order_id")], util_intToStr(t_orders->rows[i].id)) == 0)
+                                printf("%s", db_selectRowWhereId(*t_products, atoi(t_orderPackages->rows[j].elements[db_getColIdx(*t_orderPackages, "product_id")]))->elements[db_getColIdx(*t_products, "name")]);
+                                if (n_found_pkg >= 2)
                                 {
-                                    printf("%s", db_selectRowWhereId(*t_products, atoi(t_orderPackages->rows[j].elements[db_getColIdx(*t_orderPackages, "product_id")]))->elements[db_getColIdx(*t_products, "name")]);
-                                    if (n_found_pkg >= 2)
-                                    {
-                                        printf(", etc...");
-                                        break;
-                                    }
-
-                                    if (n_found_pkg < product_count - 1)
-                                    {
-                                        printf(", ");
-                                    }
-
-                                    n_found_pkg++;
+                                    printf(", etc...");
+                                    break;
                                 }
+
+                                if (n_found_pkg < product_count - 1)
+                                {
+                                    printf(", ");
+                                }
+
+                                n_found_pkg++;
                             }
                         }
+                    }
 
-                        printf("\n");
+                    printf("\n");
 
-                        con_printColor("Status: ", FG_GREEN);
-                        request_row = db_selectFirstRowWhere(*t_returnRequest, db_getColIdx(*t_returnRequest, "order_id"), util_intToStr(t_orders->rows[i].id));
-                        if (!request_row)
-                        {
-                            if (isDelivered)
-                                con_printColor("Shipped\n", FG_CYAN);
-                            else
-                                con_printColor("On delivery\n", FG_YELLOW);
-
-                            request_row = NULL;
-                        }
+                    con_printColor("Status: ", FG_GREEN);
+                    request_row = db_selectFirstRowWhere(*t_returnRequest, db_getColIdx(*t_returnRequest, "order_id"), util_intToStr(t_orders->rows[i].id));
+                    if (!request_row)
+                    {
+                        if (isDelivered)
+                            con_printColor("Shipped\n", FG_CYAN);
                         else
-                        {
-                            con_printColor("Request return pending\n", FG_ERROR);
-                            request_row = NULL;
-                        }
+                            con_printColor("On delivery\n", FG_YELLOW);
 
-                        con_printColor("Ordered on: ", FG_GREEN);
-                        printf("%s\n", t_orders->rows[i].elements[db_getColIdx(*t_orders, "order_date")]);
-
-                        if (!isDelivered)
-                        {
-                            con_printColor("Estimated delivery: ", FG_GREEN);
-                            printf("In %d day%s\n", daysLeft, (daysLeft > 1) ? "s" : "");
-                        }
-                        else
-                        {
-                            con_printColor("Delivered on: ", FG_GREEN);
-                            printf("%s\n", t_orders->rows[i].elements[db_getColIdx(*t_orders, "delivery_date")]);
-                        }
-
-                        n_found_od++;
+                        request_row = NULL;
                     }
+                    else
+                    {
+                        con_printColor("Request return pending\n", FG_ERROR);
+                        request_row = NULL;
+                    }
+
+                    con_printColor("Ordered on: ", FG_GREEN);
+                    printf("%s\n", t_orders->rows[i].elements[db_getColIdx(*t_orders, "order_date")]);
+
+                    if (!isDelivered)
+                    {
+                        con_printColor("Estimated delivery: ", FG_GREEN);
+                        printf("In %d day%s\n", daysLeft, (daysLeft > 1) ? "s" : "");
+                    }
+                    else
+                    {
+                        con_printColor("Delivered on: ", FG_GREEN);
+                        printf("%s\n", t_orders->rows[i].elements[db_getColIdx(*t_orders, "delivery_date")]);
+                    }
+
+                    n_found_od++;
                 }
             }
-
-            if (n_found_od <= 0)
-                con_printColor("Currently no orders!\n", FG_ERROR);
-
-            vis_printBars(V_BAR, con_getSize()->x);
-
-            if (n_found_od <= 0)
-                vis_printListMenu(1, "Exit");
-            else
-                vis_printListMenu(3, "View order details", "Request return", "Exit");
-
-            vis_printBars(V_BAR, con_getSize()->x);
-
-            con_printColor("Selection: ", FG_PROMPT);
-            n_input = con_inputInt();
-
-            if (n_found_od <= 0)
-            {
-                switch (n_input)
-                {
-                case 1:
-                    break;
-                default:
-                    continue;
-                }
-            }
-            else
-            {
-                switch (n_input)
-                {
-                case 1:
-                    // view details
-
-                    con_printColor("Enter order ID: ", FG_PROMPT);
-                    n_input = con_inputInt();
-
-                    detail_row = db_selectRowWhereId(*t_orders, n_input);
-                    if (!detail_row)
-                    {
-                        con_printColor("Order ID not found! (Press Any Key) . . .", FG_ERROR);
-                        detail_row = NULL;
-                        con_anyKey();
-                        continue;
-                    }
-
-                    if (strcmp(detail_row->elements[db_getColIdx(*t_orders, "username")], u_activeUser->username) != 0)
-                    {
-                        con_printColor("Order ID not found! (Press Any Key) . . .", FG_ERROR);
-                        detail_row = NULL;
-                        con_anyKey();
-                        continue;
-                    }
-
-                    while (true)
-                    {
-
-                        con_clearScr();
-
-                        printf("Order details\n");
-                        vis_printBars(V_BAR, con_getSize()->x);
-                        printf("\n%s[Order ID: %d]%s\n", FG_MAGENTA, detail_row->id, FG_DEFAULT);
-                        vis_printBars(V_BAR, con_getSize()->x);
-
-                        con_printColor("Recipient: ", FG_GREEN);
-                        printf("%s\n", detail_row->elements[db_getColIdx(*t_orders, "username")]);
-                        con_printColor("Address: ", FG_GREEN);
-                        printf("%s\n", detail_row->elements[db_getColIdx(*t_orders, "address")]);
-                        con_printColor("Payment: ", FG_GREEN);
-                        printf("%s\n", db_selectRowWhereId(*t_bankAccounts, atoi(detail_row->elements[db_getColIdx(*t_orders, "card_id")]))->elements[db_getColIdx(*t_bankAccounts, "bank")]);
-                        con_printColor("Agent: ", FG_GREEN);
-                        printf("%s\n", db_selectRowWhereId(*t_agents, atoi(detail_row->elements[db_getColIdx(*t_orders, "agent_id")]))->elements[db_getColIdx(*t_agents, "name")]);
-
-                        vis_printBars(V_BAR, con_getSize()->x);
-                        printf("Products\n");
-                        vis_printBars(V_BAR, con_getSize()->x);
-
-                        for (int i = 0; i < t_orderPackages->row_count; i++)
-                        {
-                            detailProduct_row = NULL;
-                            if (!t_orderPackages->rows[i].is_null)
-                            {
-                                if (strcmp(t_orderPackages->rows[i].elements[db_getColIdx(*t_orderPackages, "order_id")], util_intToStr(detail_row->id)) == 0)
-                                {
-                                    detailProduct_row = db_selectRowWhereId(*t_products, atoi(t_orderPackages->rows[i].elements[db_getColIdx(*t_orderPackages, "product_id")]));
-                                    printf("\n%s\n", detailProduct_row->elements[db_getColIdx(*t_products, "name")]);
-                                    printf("%sRp%s %sx%s%s\n",
-                                           FG_GREEN,
-                                           detailProduct_row->elements[db_getColIdx(*t_products, "price")],
-                                           FG_YELLOW,
-                                           t_orderPackages->rows[i].elements[db_getColIdx(*t_orderPackages, "quantity")],
-                                           FG_DEFAULT);
-                                }
-                            }
-                        }
-
-                        vis_printBars(V_BAR, con_getSize()->x);
-                        vis_printListMenu(1, "Exit");
-                        vis_printBars(V_BAR, con_getSize()->x);
-
-                        con_printColor("Selection: ", FG_PROMPT);
-                        n_input = con_inputInt();
-
-                        switch (n_input)
-                        {
-                        case 1:
-                            break;
-                        default:
-                            continue;
-                        }
-
-                        break;
-                    }
-
-                    continue;
-                case 2:
-                    // return
-                    con_printColor("Enter order ID you want to return: ", FG_PROMPT);
-                    n_input = con_inputInt();
-                    return_row = db_selectRowWhereId(*t_orders, n_input);
-                    if (!return_row)
-                    {
-                        con_printColor("Order ID not found! (Press Any Key) . . .", FG_ERROR);
-                        return_row = NULL;
-                        con_anyKey();
-                        continue;
-                    }
-
-                    if (strcmp(return_row->elements[db_getColIdx(*t_orders, "username")], u_activeUser->username) != 0)
-                    {
-                        con_printColor("Invalid order ID! (Press Any Key) . . .", FG_ERROR);
-                        return_row = NULL;
-                        con_anyKey();
-                        continue;
-                    }
-
-                    if (dt_getDaysBetween(*dt_getTimeNow(), *dt_strToDate(return_row->elements[db_getColIdx(*t_orders, "delivery_date")])) > 0)
-                    {
-                        con_printColor("Order is still on shipment! (Press Any Key) . . .", FG_ERROR);
-                        return_row = NULL;
-                        con_anyKey();
-                        continue;
-                    }
-
-                    if (dt_getDaysBetween(*dt_getTimeNow(), *dt_strToDate(return_row->elements[db_getColIdx(*t_orders, "delivery_date")])) < -7)
-                    {
-                        con_printColor("Can't return order that's been delivered over 7 days! (Press Any Key) . . .", FG_ERROR);
-                        return_row = NULL;
-                        con_anyKey();
-                        continue;
-                    }
-
-                    request_row = db_newRow(t_returnRequest->col_count);
-                    request_row->id = db_getHighestId(*t_returnRequest) + 1;
-                    request_row->elements[db_getColIdx(*t_returnRequest, "order_id")] = util_intToStr(return_row->id);
-
-                    db_insertRow(t_returnRequest, *request_row);
-                    db_saveTable(*t_returnRequest, path_returnRequest);
-
-                    con_printColor("Request return sent to seller!\nPlease wait until the seller approves it\nYour balance will be updated after the seller approves it (Press Any Key) . . .", FG_GREEN);
-                    return_row = NULL;
-                    request_row = NULL;
-                    con_anyKey();
-
-                    continue;
-                case 3:
-                    break;
-                default:
-                    continue;
-                }
-            }
-
-            break;
         }
+
+        if (n_found_od <= 0)
+            con_printColor("Currently no orders!\n", FG_ERROR);
+
+        vis_printBars(V_BAR, con_getSize()->x);
+
+        if (n_found_od <= 0)
+            vis_printListMenu(1, "Exit");
+        else
+            vis_printListMenu(3, "View order details", "Request return", "Exit");
+
+        vis_printBars(V_BAR, con_getSize()->x);
+
+        con_printColor("Selection: ", FG_PROMPT);
+        n_input = con_inputInt();
+
+        if (n_found_od <= 0)
+        {
+            switch (n_input)
+            {
+            case 1:
+                break;
+            default:
+                continue;
+            }
+        }
+        else
+        {
+            switch (n_input)
+            {
+            case 1:
+                // view details
+
+                con_printColor("Enter order ID: ", FG_PROMPT);
+                n_input = con_inputInt();
+
+                detail_row = db_selectRowWhereId(*t_orders, n_input);
+                if (!detail_row)
+                {
+                    con_printColor("Order ID not found! (Press Any Key) . . .", FG_ERROR);
+                    detail_row = NULL;
+                    con_anyKey();
+                    continue;
+                }
+
+                if (strcmp(detail_row->elements[db_getColIdx(*t_orders, "username")], u_activeUser->username) != 0)
+                {
+                    con_printColor("Order ID not found! (Press Any Key) . . .", FG_ERROR);
+                    detail_row = NULL;
+                    con_anyKey();
+                    continue;
+                }
+
+                view_orderDetail(*detail_row);
+
+                continue;
+            case 2:
+                // return
+                con_printColor("Enter order ID you want to return: ", FG_PROMPT);
+                n_input = con_inputInt();
+                return_row = db_selectRowWhereId(*t_orders, n_input);
+                if (!return_row)
+                {
+                    con_printColor("Order ID not found! (Press Any Key) . . .", FG_ERROR);
+                    return_row = NULL;
+                    con_anyKey();
+                    continue;
+                }
+
+                if (strcmp(return_row->elements[db_getColIdx(*t_orders, "username")], u_activeUser->username) != 0)
+                {
+                    con_printColor("Invalid order ID! (Press Any Key) . . .", FG_ERROR);
+                    return_row = NULL;
+                    con_anyKey();
+                    continue;
+                }
+
+                if (dt_getDaysBetween(*dt_getTimeNow(), *dt_strToDate(return_row->elements[db_getColIdx(*t_orders, "delivery_date")])) > 0)
+                {
+                    con_printColor("Order is still on shipment! (Press Any Key) . . .", FG_ERROR);
+                    return_row = NULL;
+                    con_anyKey();
+                    continue;
+                }
+
+                if (dt_getDaysBetween(*dt_getTimeNow(), *dt_strToDate(return_row->elements[db_getColIdx(*t_orders, "delivery_date")])) < -7)
+                {
+                    con_printColor("Can't return order that's been delivered over 7 days! (Press Any Key) . . .", FG_ERROR);
+                    return_row = NULL;
+                    con_anyKey();
+                    continue;
+                }
+
+                request_row = db_newRow(t_returnRequest->col_count);
+                request_row->id = db_getHighestId(*t_returnRequest) + 1;
+                request_row->elements[db_getColIdx(*t_returnRequest, "order_id")] = util_intToStr(return_row->id);
+
+                db_insertRow(t_returnRequest, *request_row);
+                db_saveTable(*t_returnRequest, path_returnRequest);
+
+                con_printColor("Request return sent to seller!\nPlease wait until the seller approves it\nYour balance will be updated after the seller approves it (Press Any Key) . . .", FG_GREEN);
+                return_row = NULL;
+                request_row = NULL;
+                con_anyKey();
+
+                continue;
+            case 3:
+                break;
+            default:
+                continue;
+            }
+        }
+
+        break;
+    }
+}
+
+void view_orderDetail(db_Row r_order)
+{
+    db_Row *detailProduct_row;
+    int n_input;
+
+    while (true)
+    {
+        con_clearScr();
+
+        printf("Order details\n");
+        vis_printBars(V_BAR, con_getSize()->x);
+        printf("\n%s[Order ID: %d]%s\n", FG_MAGENTA, r_order.id, FG_DEFAULT);
+        vis_printBars(V_BAR, con_getSize()->x);
+
+        con_printColor("Recipient: ", FG_GREEN);
+        printf("%s\n", r_order.elements[db_getColIdx(*t_orders, "username")]);
+        con_printColor("Address: ", FG_GREEN);
+        printf("%s\n", r_order.elements[db_getColIdx(*t_orders, "address")]);
+        con_printColor("Payment: ", FG_GREEN);
+        printf("%s\n", db_selectRowWhereId(*t_bankAccounts, atoi(r_order.elements[db_getColIdx(*t_orders, "card_id")]))->elements[db_getColIdx(*t_bankAccounts, "bank")]);
+        con_printColor("Agent: ", FG_GREEN);
+        printf("%s\n", db_selectRowWhereId(*t_agents, atoi(r_order.elements[db_getColIdx(*t_orders, "agent_id")]))->elements[db_getColIdx(*t_agents, "name")]);
+
+        vis_printBars(V_BAR, con_getSize()->x);
+        printf("Products\n");
+        vis_printBars(V_BAR, con_getSize()->x);
+
+        for (int i = 0; i < t_orderPackages->row_count; i++)
+        {
+            detailProduct_row = NULL;
+            if (!t_orderPackages->rows[i].is_null)
+            {
+                if (strcmp(t_orderPackages->rows[i].elements[db_getColIdx(*t_orderPackages, "order_id")], util_intToStr(r_order.id)) == 0)
+                {
+                    detailProduct_row = db_selectRowWhereId(*t_products, atoi(t_orderPackages->rows[i].elements[db_getColIdx(*t_orderPackages, "product_id")]));
+                    printf("\n%s\n", detailProduct_row->elements[db_getColIdx(*t_products, "name")]);
+                    printf("%sRp%s %sx%s%s\n",
+                           FG_GREEN,
+                           detailProduct_row->elements[db_getColIdx(*t_products, "price")],
+                           FG_YELLOW,
+                           t_orderPackages->rows[i].elements[db_getColIdx(*t_orderPackages, "quantity")],
+                           FG_DEFAULT);
+                }
+            }
+        }
+
+        vis_printBars(V_BAR, con_getSize()->x);
+        vis_printListMenu(1, "Exit");
+        vis_printBars(V_BAR, con_getSize()->x);
+
+        con_printColor("Selection: ", FG_PROMPT);
+        n_input = con_inputInt();
+
+        switch (n_input)
+        {
+        case 1:
+            break;
+        default:
+            continue;
+        }
+        break;
     }
 }
 
@@ -1763,7 +1767,7 @@ void view_checkoutEditPayment(int *p_bankAccount)
         if (n_found <= 0)
             vis_printListMenu(1, "Back");
         else
-            vis_printListMenu(2, "Select paymnet with ID", "Back");
+            vis_printListMenu(2, "Select payment with ID", "Back");
 
         vis_printBars(V_BAR, con_getSize()->x);
 
@@ -2425,7 +2429,6 @@ void view_settingsDisconnectBank()
     ========= Admin Manage ==========
 */
 
-// TODO:
 void view_adminManageProducts()
 {
     if (!u_activeUser->is_login && !u_activeUser->is_seller)
@@ -2622,6 +2625,108 @@ void view_adminManageOrders()
 {
     if (!u_activeUser->is_login && !u_activeUser->is_seller)
         return;
+
+    int n_input;
+    int n_found_od;
+
+    db_Row *request_row = NULL;
+    db_Row *order_detail_row = NULL;
+
+    while (true)
+    {
+        n_found_od = 0;
+
+        con_clearScr();
+
+        printf("All Orders\n");
+        vis_printBars(V_BAR, con_getSize()->x);
+
+        // copy
+        for (int i = 0; i < t_orders->row_count; i++)
+        {
+            if (!t_orders->rows[i].is_null)
+            {
+                int daysLeft = dt_getDaysBetween(
+                    *dt_getTimeNow(),
+                    *dt_strToDate(strdup(t_orders->rows[i].elements[db_getColIdx(*t_orders, "delivery_date")])));
+                bool isDelivered = (daysLeft > 0)
+                                       ? false
+                                       : true;
+                printf("\n%s[Order ID: %d]%s", FG_MAGENTA, t_orders->rows[i].id, FG_DEFAULT);
+                printf("\nRecipient: %s%s%s\n", FG_YELLOW, t_orders->rows[i].elements[db_getColIdx(*t_orders, "username")], FG_DEFAULT);
+                con_printColor("Status: ", FG_GREEN);
+                request_row = db_selectFirstRowWhere(*t_returnRequest, db_getColIdx(*t_returnRequest, "order_id"), util_intToStr(t_orders->rows[i].id));
+                if (!request_row)
+                {
+                    if (isDelivered)
+                        con_printColor("Shipped\n", FG_CYAN);
+                    else
+                        con_printColor("On delivery\n", FG_YELLOW);
+
+                    request_row = NULL;
+                }
+                else
+                {
+                    con_printColor("Pending return approval\n", FG_ERROR);
+                    request_row = NULL;
+                }
+
+                con_printColor("Ordered on: ", FG_GREEN);
+                printf("%s\n", t_orders->rows[i].elements[db_getColIdx(*t_orders, "order_date")]);
+
+                if (!isDelivered)
+                {
+                    con_printColor("Estimated delivery: ", FG_GREEN);
+                    printf("In %d day%s\n", daysLeft, (daysLeft > 1) ? "s" : "");
+                }
+                else
+                {
+                    con_printColor("Delivered on: ", FG_GREEN);
+                    printf("%s\n", t_orders->rows[i].elements[db_getColIdx(*t_orders, "delivery_date")]);
+                }
+
+                n_found_od++;
+            }
+        }
+
+        vis_printBars(V_BAR, con_getSize()->x);
+        vis_printListMenu(3, "View order details", "Approve/reject return request", "Exit");
+        vis_printBars(V_BAR, con_getSize()->x);
+
+        con_printColor("Selection: ", FG_PROMPT);
+        n_input = con_inputInt();
+
+        switch (n_input)
+        {
+        case 1:
+            // View order details
+            con_printColor("Enter order ID: ", FG_PROMPT);
+            n_input = con_inputInt();
+
+            order_detail_row = db_selectRowWhereId(*t_orders, n_input);
+            if (!order_detail_row)
+            {
+                con_printColor("Order ID not found! (Press Any Key) . . .", FG_ERROR);
+                order_detail_row = NULL;
+                con_anyKey();
+                continue;
+            }
+
+            view_orderDetail(*order_detail_row);
+
+            continue;
+        case 2:
+            // Reject / approve return
+
+            continue;
+        case 3:
+            break;
+        default:
+            continue;
+        }
+
+        break;
+    }
 }
 
 /*

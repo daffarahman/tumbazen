@@ -1,1 +1,3 @@
 |id|username|name|full_address|latitude|longitude|
+|1|daffarahman|Chicken Dealer|Jl. MT Haryono No.29, Mangkubumen, Kec. Banjarsari, Kota Surakarta, Jawa Tengah 57139|-7.5553616|110.8113865|
+|2|zidan|Grand Mall|Jl. Dr. Wahidin No.3, Penumping, Kec. Laweyan, Kota Surakarta, Jawa Tengah 57148|-7.5662131|110.8074969|
