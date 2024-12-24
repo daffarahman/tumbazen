@@ -5,7 +5,6 @@ dt_DateTime *dt_strToDate(char *str)
     dt_DateTime *date = (dt_DateTime *)malloc(sizeof(dt_DateTime));
     int buff_day, buff_month, buff_year;
     int buff_hour, buff_minute, buff_second;
-    // sscanf(str, "%d-%d-%d %d:%d:%d", &date->day, &date->month, &date->year, &date->hour, &date->minute, &date->second);
 
     sscanf(strdup(str), "%d-%d-%d %d:%d:%d", &buff_day, &buff_month, &buff_year, &buff_hour, &buff_minute, &buff_second);
 

@@ -1043,6 +1043,7 @@ void view_orders()
     db_Row *request_row = NULL;
     db_Row *detail_row = NULL;
     db_Row *detailProduct_row = NULL;
+    db_Row *check_request_row = NULL;
 
     // user view
     while (true)
@@ -1050,6 +1051,7 @@ void view_orders()
         return_row = NULL;
         request_row = NULL;
         detail_row = NULL;
+        check_request_row = NULL;
 
         con_clearScr();
 
@@ -1105,6 +1107,11 @@ void view_orders()
 
                     con_printColor("Status: ", FG_GREEN);
                     request_row = db_selectFirstRowWhere(*t_returnRequest, db_getColIdx(*t_returnRequest, "order_id"), util_intToStr(t_orders->rows[i].id));
+
+                    if (request_row)
+                        if (request_row->is_null)
+                            request_row = NULL;
+
                     if (!request_row)
                     {
                         if (isDelivered)
@@ -1147,7 +1154,7 @@ void view_orders()
         if (n_found_od <= 0)
             vis_printListMenu(1, "Exit");
         else
-            vis_printListMenu(3, "View order details", "Request return", "Exit");
+            vis_printListMenu(3, "View order details", "Request/Cancel return", "Exit");
 
         vis_printBars(V_BAR, con_getSize()->x);
 
@@ -1196,7 +1203,7 @@ void view_orders()
                 continue;
             case 2:
                 // return
-                con_printColor("Enter order ID you want to return: ", FG_PROMPT);
+                con_printColor("Enter order ID you want to return or cancel return: ", FG_PROMPT);
                 n_input = con_inputInt();
                 return_row = db_selectRowWhereId(*t_orders, n_input);
                 if (!return_row)
@@ -1228,6 +1235,28 @@ void view_orders()
                     con_printColor("Can't return order that's been delivered over 7 days! (Press Any Key) . . .", FG_ERROR);
                     return_row = NULL;
                     con_anyKey();
+                    continue;
+                }
+
+                check_request_row = db_selectFirstRowWhere(*t_returnRequest, db_getColIdx(*t_returnRequest, "order_id"), util_intToStr(n_input));
+                if (check_request_row)
+                {
+                    printf("Order is still on return request pending, cancel return request?\n");
+                    vis_printBars(V_BAR, con_getSize()->x);
+                    vis_printListMenu(2, "Yes", "No (Default)");
+                    vis_printBars(V_BAR, con_getSize()->x);
+
+                    con_printColor("Selection: ", FG_PROMPT);
+                    n_input = con_inputInt();
+
+                    if (n_input != 1)
+                        continue;
+
+                    check_request_row->is_null = true;
+                    check_request_row = NULL;
+
+                    db_saveTable(*t_returnRequest, path_returnRequest);
+
                     continue;
                 }
 
