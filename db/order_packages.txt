@@ -1,2 +1,1 @@
 |id|order_id|product_id|quantity|
-|3|2|20|2|

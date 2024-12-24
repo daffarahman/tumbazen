@@ -1,3 +1,2 @@
 |id|username|account_id|
 |1|daffarahman|3|
-|2|zidan|7|

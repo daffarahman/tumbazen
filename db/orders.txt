@@ -1,2 +1,1 @@
 |id|username|address|latitude|longitude|card_id|agent_id|order_date|delivery_date|total_price|shipping_fee|
-|2|zidan|Jl. Dr. Wahidin No.3, Penumping, Kec. Laweyan, Kota Surakarta, Jawa Tengah 57148|-7.5662131|110.8074969|7|2|23-12-2024 11:56:51|26-12-2024 20:19:00|13000|1739|
