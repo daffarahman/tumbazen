@@ -2639,7 +2639,7 @@ void view_adminManageOrders()
     int n_found_od;
 
     db_Row *request_row = NULL;
-    db_Row *order_detail_row = NULL;
+    db_Row *order_row = NULL;
 
     while (true)
     {
@@ -2712,20 +2712,39 @@ void view_adminManageOrders()
             con_printColor("Enter order ID: ", FG_PROMPT);
             n_input = con_inputInt();
 
-            order_detail_row = db_selectRowWhereId(*t_orders, n_input);
-            if (!order_detail_row)
+            order_row = db_selectRowWhereId(*t_orders, n_input);
+            if (!order_row)
             {
                 con_printColor("Order ID not found! (Press Any Key) . . .", FG_ERROR);
-                order_detail_row = NULL;
+                order_row = NULL;
                 con_anyKey();
                 continue;
             }
 
-            view_orderDetail(*order_detail_row);
+            view_orderDetail(*order_row);
 
             continue;
         case 2:
             // Reject / approve return
+            con_printColor("Enter order ID: ", FG_PROMPT);
+            n_input = con_inputInt();
+
+            order_row = db_selectRowWhereId(*t_orders, n_input);
+            if (!order_row)
+            {
+                con_printColor("Order ID not found! (Press Any Key) . . .", FG_ERROR);
+                order_row = NULL;
+                con_anyKey();
+                continue;
+            }
+
+            request_row = request_row = db_selectFirstRowWhere(*t_returnRequest, db_getColIdx(*t_returnRequest, "order_id"), util_intToStr(n_input));
+            if (!request_row)
+            {
+                con_printColor("This order does not have any return request! (Press Any Key) . . .", FG_ERROR);
+                con_anyKey();
+                continue;
+            }
 
             continue;
         case 3:
