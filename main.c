@@ -136,7 +136,8 @@ void view_menu()
             {
                 int totalRevenue = 0;
                 for (int i = 0; i < t_orders->row_count; i++)
-                    totalRevenue += atoi(t_orders->rows[i].elements[db_getColIdx(*t_orders, "total_price")]);
+                    if (!t_orders->rows[i].is_null)
+                        totalRevenue += atoi(t_orders->rows[i].elements[db_getColIdx(*t_orders, "total_price")]);
 
                 printf("%sWelcome to Seller Center%s\nLogged in as: %s%s%s!\n", FG_YELLOW, FG_DEFAULT, FG_GREEN, u_activeUser->username, FG_DEFAULT);
 
@@ -2669,10 +2670,16 @@ void view_adminManageOrders()
 
     db_Row *request_row = NULL;
     db_Row *order_row = NULL;
+    db_Row *bank_row = NULL;
+    db_Row *product_row = NULL;
 
     while (true)
     {
         n_found_od = 0;
+        request_row = NULL;
+        order_row = NULL;
+        bank_row = NULL;
+        product_row = NULL;
 
         con_clearScr();
 
@@ -2773,6 +2780,57 @@ void view_adminManageOrders()
                 con_printColor("This order does not have any return request! (Press Any Key) . . .", FG_ERROR);
                 con_anyKey();
                 continue;
+            }
+
+            vis_printBars(V_BAR, con_getSize()->x);
+            vis_printListMenu(3, "Approve Return", "Reject Return", "Back (Default)");
+            vis_printBars(V_BAR, con_getSize()->x);
+
+            con_printColor("Selection: ", FG_PROMPT);
+            n_input = con_inputInt();
+
+            // Approve
+            if (n_input == 1)
+            {
+                order_row->is_null = true;
+                request_row->is_null = true;
+
+                // bring money back to the bank
+                bank_row = db_selectRowWhereId(*t_bankAccounts, atoi(order_row->elements[db_getColIdx(*t_orders, "card_id")]));
+                bank_row->elements[db_getColIdx(*t_bankAccounts, "balance")] = util_intToStr(atoi(bank_row->elements[db_getColIdx(*t_bankAccounts, "balance")]) + atoi(order_row->elements[db_getColIdx(*t_orders, "total_price")]) + atoi(order_row->elements[db_getColIdx(*t_orders, "shipping_fee")]));
+
+                // return items
+                for (int i = 0; i < t_orderPackages->row_count; i++)
+                {
+                    if (!t_orderPackages->rows[i].is_null)
+                    {
+                        if (strcmp(t_orderPackages->rows[i].elements[db_getColIdx(*t_orderPackages, "order_id")], util_intToStr(order_row->id)) == 0)
+                        {
+                            t_orderPackages->rows[i].is_null = true;
+                            product_row = db_selectRowWhereId(*t_products, atoi(t_orderPackages->rows[i].elements[db_getColIdx(*t_orderPackages, "product_id")]));
+                            product_row->elements[db_getColIdx(*t_products, "stock")] = util_intToStr(atoi(product_row->elements[db_getColIdx(*t_products, "stock")]) + atoi(t_orderPackages->rows[i].elements[db_getColIdx(*t_orderPackages, "quantity")]));
+                            product_row->elements[db_getColIdx(*t_products, "numbers_sold")] = util_intToStr(atoi(product_row->elements[db_getColIdx(*t_products, "numbers_sold")]) - atoi(t_orderPackages->rows[i].elements[db_getColIdx(*t_orderPackages, "quantity")]));
+                        }
+                    }
+                }
+
+                db_saveTable(*t_orderPackages, path_orderPackages);
+                db_saveTable(*t_products, path_products);
+                db_saveTable(*t_orders, path_orders);
+                db_saveTable(*t_bankAccounts, path_bankAccounts);
+                db_saveTable(*t_returnRequest, path_returnRequest);
+
+                printf("%sOrder ID %d has been returned to your store! (Press Any Key) . . .%s", FG_GREEN, order_row->id, FG_DEFAULT);
+                con_anyKey();
+            }
+            // Reject
+            else if (n_input == 2)
+            {
+                request_row->is_null = true;
+                db_saveTable(*t_returnRequest, path_returnRequest);
+
+                printf("%sOrder ID %d return request has been rejected! (Press Any Key) . . .%s", FG_GREEN, order_row->id, FG_DEFAULT);
+                con_anyKey();
             }
 
             continue;

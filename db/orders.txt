@@ -1,3 +1,2 @@
 |id|username|address|latitude|longitude|card_id|agent_id|order_date|delivery_date|total_price|shipping_fee|
-|1|daffarahman|Jl. MT Haryono No.29, Mangkubumen, Kec. Banjarsari, Kota Surakarta, Jawa Tengah 57139|-7.5553616|110.8113865|3|2|22-12-2024 22:48:19|24-12-2024 13:50:00|14500|1972|
 |2|zidan|Jl. Dr. Wahidin No.3, Penumping, Kec. Laweyan, Kota Surakarta, Jawa Tengah 57148|-7.5662131|110.8074969|7|2|23-12-2024 11:56:51|26-12-2024 20:19:00|13000|1739|
