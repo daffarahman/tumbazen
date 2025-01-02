@@ -1,22 +1,21 @@
 |id|name|description|price|category|stock|numbers_sold|weight|
-|1|Aqua 600ml|Air mineral kemasan 600ml|3500|Minuman|10|260|600|
-|2|Indomie Goreng|Mi instan rasa original goreng|3000|Makanan|97|503|85|
-|3|Silverqueen Almond 62g|Cokelat dengan almond|13500|Makanan|30|150|62|
-|4|Beng-Beng|Wafer cokelat dengan karamel|2500|Makanan|200|400|22|
-|5|Chitato BBQ 68g|Keripik kentang rasa BBQ|10000|Makanan|35|305|68|
-|6|Pocari Sweat 500ml|Minuman isotonik kemasan botol|7000|Minuman|60|250|500|
-|7|Teh Botol Sosro 350ml|Teh manis dalam botol kaca|5000|Minuman|88|422|350|
-|8|Nutrisari Jeruk|Minuman serbuk rasa jeruk|2000|Minuman|150|350|10|
-|9|Kopi Kapal Api 10g|Kopi hitam instan bubuk|1000|Minuman|300|700|10|
-|10|Sari Roti Tawar|Roti tawar putih tanpa kulit|12000|Makanan|20|100|200|
-|11|Tango Wafer Chocolate|Wafer rasa cokelat 65g|8000|Makanan|50|200|65|
-|12|Sprite 390ml|Minuman soda rasa lemon-lime|7000|Minuman|76|354|390|
-|13|Oreo Original 137g|Biskuit cokelat dengan krim vanila|10000|Makanan|70|300|137|
-|14|Good Day Cappuccino|Kopi instan rasa cappuccino|2000|Minuman|98|402|10|
-|15|Cimory Yogurt Drink 250ml|Minuman yogurt rasa stroberi|12000|Minuman|40|200|250|
-|16|Yupi Gummy Bears|Permen kenyal rasa buah|6000|Makanan|60|150|45|
-|17|Cheetos Flamin' Hot 75g|Keripik jagung pedas|8500|Makanan|48|252|75|
-|18|Fanta Strawberry 390ml|Minuman soda rasa stroberi|7000|Minuman|63|307|390|
-|19|Mie Sedap Kari Ayam|Mi instan rasa kari ayam|3000|Makanan|35|495|85|
-|20|Ultra Milk Cokelat 250ml|Susu cair rasa cokelat|6500|Minuman|79|531|250|
-|21|Coca-Cola|Minuman soda menyegarkan dari coca cola segarrrr|5000|Minuman|25|0|200|
+|1|Aqua|Air minuman segar dari pegunungan|3000|Minuman|250|0|200|
+|2|Teh Pucuk Harum|Teh segar dipetik dari pohon pucuk alami|4000|Minuman|150|0|150|
+|3|Sprite|Minuman soda lemon segar cocok untuk menemani hari|5000|Minuman|100|0|200|
+|4|Roti Selai Coklat|Roti lembut dengan selai coklat yang manis dan nikmat|6000|Makanan|100|0|100|
+|5|OBH Combi|OBH Combi mengatasi batuk dengan cepat|12000|Obat|20|0|250|
+|6|The Architecture of Love|Novel karya Ika Natassa tentang Raia dan River|80000|Buku|50|0|300|
+|7|Dancow Full Cream|Susu full cream sehat untuk tubuh dan kalsium|5000|Minuman|100|0|250|
+|8|Chitato BBQ|Rasakan kentang gurih bertabur saus BBQ|15000|Makanan|80|0|150|
+|9|Tremenza|Obat batuk pilek yang manjur|8000|Obat|100|0|100|
+|10|Oppresor MK2|Custom hoverbike featured in Grand Theft Auto Online|1000000|Kendaraan|3|0|100000|
+|11|RawType Riot Hotwheels|RawType x Hotwheels menghadirkan Jaket dengan style HotRod|2000000|Baju|18|0|50|
+|12|The Book of Mythicality|Buku yang menceritakan kisah Rhett & Link di Good Mythical Morning|245000|Buku|10|0|350|
+|13|Indomie Goreng|Mie goreng lezat khas indomie|3000|Makanan|250|0|100|
+|14|Pop Mie x Amba|Pop mie dengan kuah spesial|5000|Makanan|100|0|100|
+|15|Beef Burger|Burger lezat dengan daging sapi yang lumer|18000|Makanan|10|0|50|
+|16|Tuxedo|Pakaian mewah untuk makan malam|20000000|Baju|10|0|400|
+|17|Kaos JMK48|Kaos spesial tanda tangan dari para member JMK48|300000|Baju|10|0|100|
+|18|Indomie Kari|Kari spesial dengan cita rasa yang nikmat|3500|Makanan|200|0|100|
+|19|Nasi Goreng Instan|Frozen food dari salah satu makanan lezat khas indonesia|15000|Makanan|50|0|200|
+|20|HotWheels Regular|Mainan Hotwheels reguler assorted, dikirim acak|34500|Mainan|72|0|150|
