@@ -1,2 +1,2 @@
 |id|username|name|full_address|latitude|longitude|
-|1|daffarahman|Chicken Dealer|Jl. MT Haryono No.29, Mangkubumen, Kec. Banjarsari, Kota Surakarta, Jawa Tengah 57139|-7.5553616|110.8113865|
+|1|daffarahman|Home|Jl. MT Haryono No.29, Mangkubumen, Kec. Banjarsari, Kota Surakarta, Jawa Tengah 57139|-7.5595585991285885|110.79726711363743|
